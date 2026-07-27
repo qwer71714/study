@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// 사용자
+// ─────────────────────────────────────────────
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  nickname  String     @unique
+  password  String
+  role      UserRole   @default(USER)
+  status    UserStatus @default(ACTIVE)
+  avatarUrl String?
+  bio       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedStudies    Study[]    @relation("StudyOwner")
+  studyMembers    StudyMember[]
+  ownedSessions   MoGakCoSession[] @relation("SessionOwner")
+  sessionMembers  MoGakCoSessionMember[]
+  reports         Report[]   @relation("Reporter")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// 스터디 그룹
+// ─────────────────────────────────────────────
+enum StudyStatus {
+  PENDING   // 승인 대기
+  ACTIVE    // 운영 중
+  CLOSED    // 종료
+  REJECTED  // 거절됨
+}
+
+enum StudyCategory {
+  PROGRAMMING
+  LANGUAGE
+  CERTIFICATE
+  DESIGN
+  STARTUP
+  OTHER
+}
+
+model Study {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  category    StudyCategory @default(OTHER)
+  tags        String[]
+  maxMembers  Int           @default(6)
+  status      StudyStatus   @default(PENDING)
+  isOnline    Boolean       @default(true)
+  location    String?
+
+  ownerId String
+  owner   User   @relation("StudyOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members StudyMember[]
+
+  @@map("studies")
+}
+
+model StudyMember {
+  id       String @id @default(cuid())
+  studyId  String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([studyId, userId])
+  @@map("study_members")
+}
+
+// ─────────────────────────────────────────────
+// 모각코 세션
+// ─────────────────────────────────────────────
+enum SessionStatus {
+  SCHEDULED   // 예정
+  ONGOING     // 진행 중
+  COMPLETED   // 완료
+  CANCELLED   // 취소
+}
+
+model MoGakCoSession {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  location    String        // 카페명 또는 온라인 링크
+  isOnline    Boolean       @default(false)
+  maxMembers  Int           @default(4)
+  status      SessionStatus @default(SCHEDULED)
+  scheduledAt DateTime
+  endedAt     DateTime?
+
+  ownerId String
+  owner   User   @relation("SessionOwner", fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members MoGakCoSessionMember[]
+
+  @@map("mogakco_sessions")
+}
+
+model MoGakCoSessionMember {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  session MoGakCoSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@map("mogakco_session_members")
+}
+
+// ─────────────────────────────────────────────
+// 신고
+// ─────────────────────────────────────────────
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id         String       @id @default(cuid())
+  reason     String
+  targetType String       // "user" | "study" | "session"
+  targetId   String
+  status     ReportStatus @default(PENDING)
+
+  reporterId String
+  reporter   User   @relation("Reporter", fields: [reporterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reports")
+}
