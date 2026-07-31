@@ -1,22 +1,6 @@
 'use client'
 
-interface User {
-  id: string
-  nickname: string
-  email: string
-  status: string
-  createdAt: Date
-}
-
-interface Stats {
-  totalUsers: number
-  activeUsers: number
-  pendingStudies: number
-  activeStudies: number
-  totalSessions: number
-  pendingReports: number
-  recentUsers: User[]
-}
+import { Stats } from "@/types/AdminTypes";
 
 const statCards = (stats: Stats) => [
   {

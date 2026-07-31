@@ -1,24 +1,8 @@
 'use client'
 
+import { AdminSessionsProps } from '@/types/AdminTypes'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
-
-interface Session {
-  id: string
-  title: string
-  location: string
-  isOnline: boolean
-  maxMembers: number
-  status: string
-  scheduledAt: Date
-  owner: { id: string; nickname: string }
-  _count: { members: number }
-}
-
-interface Props {
-  sessions: Session[]
-  status: string
-}
 
 const STATUS_OPTIONS = [
   { value: 'ALL', label: '전체' },
@@ -35,7 +19,7 @@ const statusBadge: Record<string, { label: string; cls: string }> = {
   CANCELLED: { label: '취소', cls: 'badge-banned' },
 }
 
-export default function SessionsClient({ sessions, status }: Props) {
+export default function SessionsClient({ sessions, status }: AdminSessionsProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 

@@ -1,40 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useActionState } from 'react'
+import { adminLoginAction } from './actions'
+
+const initialState = { error: '' }
 
 export default function AdminLoginPage() {
-  const router = useRouter()
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        router.push('/admin')
-        router.refresh()
-      } else {
-        setError(data.error ?? '로그인에 실패했습니다.')
-      }
-    } catch {
-      setError('서버 연결에 실패했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [state, formAction, isPending] = useActionState(adminLoginAction, initialState)
 
   return (
     <div className="admin-login-bg">
@@ -60,16 +32,15 @@ export default function AdminLoginPage() {
           <p className="admin-login-subtitle">관리자 전용 페이지입니다</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="admin-login-form">
+        <form action={formAction} className="admin-login-form">
           <div className="form-group">
             <label htmlFor="password" className="form-label">
               관리자 비밀번호
             </label>
             <input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               className="form-input"
               required
@@ -77,23 +48,23 @@ export default function AdminLoginPage() {
             />
           </div>
 
-          {error && (
+          {state?.error && (
             <div className="form-error" role="alert">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              {error}
+              {state.error}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading || !password}
+            disabled={isPending}
             className="form-submit-btn"
           >
-            {loading ? (
+            {isPending ? (
               <span className="btn-loading">
                 <span className="spinner" />
                 로그인 중...

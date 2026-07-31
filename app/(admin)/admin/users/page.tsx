@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { UserStatus } from '@/lib/generated/prisma/client'
 import { db } from '@/lib/db'
 import UsersClient from './_components/UsersClient'
 
@@ -10,13 +11,13 @@ async function getUsers(search: string, status: string) {
       AND: [
         search
           ? {
-              OR: [
-                { nickname: { contains: search, mode: 'insensitive' } },
-                { email: { contains: search, mode: 'insensitive' } },
-              ],
-            }
+            OR: [
+              { nickname: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ],
+          }
           : {},
-        status && status !== 'ALL' ? { status: status as any } : {},
+        status && status !== 'ALL' ? { status: status as UserStatus } : {},
       ],
     },
     orderBy: { createdAt: 'desc' },

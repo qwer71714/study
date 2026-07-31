@@ -1,23 +1,8 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useTransition } from 'react'
-
-interface User {
-  id: string
-  nickname: string
-  email: string
-  role: string
-  status: string
-  createdAt: Date
-  _count: { ownedStudies: number; ownedSessions: number }
-}
-
-interface Props {
-  users: User[]
-  search: string
-  status: string
-}
+import { AdminUsersProps } from '@/types/AdminTypes'
+import { useRouter } from 'next/navigation'
+import { useTransition } from 'react'
 
 const STATUS_OPTIONS = [
   { value: 'ALL', label: '전체' },
@@ -37,7 +22,7 @@ const roleBadge: Record<string, { label: string; cls: string }> = {
   ADMIN: { label: '어드민', cls: 'badge-admin' },
 }
 
-export default function UsersClient({ users, search, status }: Props) {
+export default function UsersClient({ users, search, status }: AdminUsersProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 

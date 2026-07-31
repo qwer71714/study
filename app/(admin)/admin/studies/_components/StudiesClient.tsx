@@ -1,24 +1,10 @@
 'use client'
 
+import { AdminStudiesProps } from '@/types/AdminTypes'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
-interface Study {
-  id: string
-  title: string
-  category: string
-  status: string
-  isOnline: boolean
-  maxMembers: number
-  createdAt: Date
-  owner: { id: string; nickname: string; email: string }
-  _count: { members: number }
-}
 
-interface Props {
-  studies: Study[]
-  status: string
-}
 
 const STATUS_OPTIONS = [
   { value: 'ALL', label: '전체' },
@@ -44,7 +30,7 @@ const categoryLabel: Record<string, string> = {
   OTHER: '기타',
 }
 
-export default function StudiesClient({ studies, status }: Props) {
+export default function StudiesClient({ studies, status }: AdminStudiesProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
